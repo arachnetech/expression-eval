@@ -86,6 +86,11 @@ const fixtures = [
 
 ];
 
+// getValue()
+var fixturesWithGetValue = [
+  {expr: 'my_val', expected: 1.234 }
+];
+
 const context = {
   string: 'string',
   number: 123,
@@ -104,17 +109,19 @@ const context = {
 var tests = 0;
 var passed = 0;
 
-fixtures.forEach((o) => {
-  tests++;
-  try {
-    var val = expr.compile(o.expr)(context);
-  } catch (e) {
-    console.error(`Error: ${o.expr}, expected ${o.expected}`);
-    throw e;
-  }
-  assert.equal(val, o.expected, `Failed: ${o.expr} (${val}) === ${o.expected}`);
-  passed++;
-});
+function testSync( o ) {
+    tests++;
+    try {
+      var val = expr.compile(o.expr)(context);
+    } catch (e) {
+      console.error(`Error: ${o.expr}, expected ${o.expected}`);
+      throw e;
+    }
+    assert.equal(val, o.expected, `Failed: ${o.expr} (${val}) === ${o.expected}`);
+    passed++;
+}
+
+fixtures.forEach( testSync );
 
 async function testAsync() {
   const asyncContext = context;
@@ -148,5 +155,14 @@ async function testAsync() {
 }
 
 testAsync().then(() => {
+
+  // get getValue()
+  context.getValue = function( id ) {
+    if( id === 'my_val' ) {
+        return 1.234;
+    }
+  };
+  fixturesWithGetValue.forEach( testSync );
+
   console.log('%s/%s tests passed.', passed, tests);
 })

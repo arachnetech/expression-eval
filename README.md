@@ -52,6 +52,9 @@ const value = expr.eval(ast, {a: 2, b: 2, c: 5}); // 2.4
 
 Alternatively, use `evalAsync` for asynchronous evaluation.
 
+As an alternative to requiring identifier values to be pre-populated directly within the context, the context may hold a function `getValue( identifierName )` returning the value
+of the identifier. 
+
 ### Compilation
 
 ```javascript

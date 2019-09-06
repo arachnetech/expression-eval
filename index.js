@@ -91,7 +91,11 @@ function evaluate ( node, context ) {
         : evaluate( node.alternate, context );
 
     case 'Identifier':
-      return context[node.name];
+      if( typeof context.getValue == 'function' ) {
+        return context.getValue( node.name );
+      } else {
+        return context[node.name];
+      }
 
     case 'Literal':
       return node.value;
@@ -157,7 +161,11 @@ async function evaluateAsync( node, context ) {
         : await evaluateAsync( node.alternate, context );
 
     case 'Identifier':
-      return context[node.name];
+        if( typeof context.getValue == 'function' ) {
+          return context.getValue( node.name );
+        } else {
+          return context[node.name];
+        }
 
     case 'Literal':
       return node.value;
