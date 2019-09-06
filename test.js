@@ -9,8 +9,8 @@ const fixtures = [
   {expr: '([true,false,true])[2]',     expected: true  },
   {expr: '([1,true,"three"]).length',  expected: 3     },
   {expr: 'isArray([1,2,3])',           expected: true  },
-  {expr: 'list[3]',                    expected: 4     },
-  {expr: 'numMap[1 + two]',            expected: 'three'},
+  {expr: 'list[3]',                    expected: 4,       idents: ['list']     },
+  {expr: 'numMap[1 + two]',            expected: 'three', idents: ['numMap', 'two' ] },
 
   // binary expression
   {expr: '1+2',         expected: 3},
@@ -25,7 +25,7 @@ const fixtures = [
   {expr: '-14>>>2',     expected: 1073741820},
   {expr: '10%6',        expected: 4},
   {expr: '"a"+"b"',     expected: 'ab'},
-  {expr: 'one + three', expected: 4},
+  {expr: 'one + three', expected: 4, idents: ['one', 'three']},
 
   // call expression
   {expr: 'func(5)',   expected: 6},
@@ -35,12 +35,13 @@ const fixtures = [
   {expr: '(true ? "true" : "false")',               expected: 'true'  },
   {expr: '( ( bool || false ) ? "true" : "false")', expected: 'true'  },
   {expr: '( true ? ( 123*456 ) : "false")',         expected: 123*456 },
-  {expr: '( false ? "true" : one + two )',          expected: 3       },
+  {expr: '( false ? "true" : one + two )',          expected: 3, idents: [ 'one', 'two' ]  },
+  {expr: '( true ? "true" : one + two )',          expected: "true", idents: [ 'one', 'two' ]  },
 
   // identifier
-  {expr: 'string', expected: 'string' },
-  {expr: 'number', expected: 123      },
-  {expr: 'bool',   expected: true     },
+  {expr: 'string', expected: 'string', idents: ['string'] },
+  {expr: 'number', expected: 123, idents: ['number']      },
+  {expr: 'bool',   expected: true, idents: ['bool']     },
 
   // literal
   {expr: '"foo"', expected: 'foo' }, // string literal
@@ -67,16 +68,16 @@ const fixtures = [
   {expr: 'true && false',    expected: false  },
 
   // member expression
-  {expr: 'foo.bar',      expected: 'baz' },
-  {expr: 'foo["bar"]',   expected: 'baz' },
-  {expr: 'foo[foo.bar]', expected: 'wow' },
+  {expr: 'foo.bar',      expected: 'baz', idents: ['foo'] },
+  {expr: 'foo["bar"]',   expected: 'baz', idents: ['foo'] },
+  {expr: 'foo[foo.bar]', expected: 'wow', idents: ['foo'] },
 
   // call expression with member
-  {expr: 'foo.func("bar")', expected: 'baz'},
+  {expr: 'foo.func("bar")', expected: 'baz', idents: ['foo']},
 
   // unary expression
-  {expr: '-one',   expected: -1   },
-  {expr: '+two',   expected: 2    },
+  {expr: '-one',   expected: -1, idents: ['one']   },
+  {expr: '+two',   expected: 2, idents: ['two']    },
   {expr: '!false', expected: true },
   {expr: '!!true', expected: true },
   {expr: '~15',    expected: -16  },
@@ -122,6 +123,20 @@ function testSync( o ) {
 }
 
 fixtures.forEach( testSync );
+
+fixtures.forEach( ( o ) => {
+  tests++;
+  try {
+    var node = expr.parse(o.expr);
+    var idents = expr.readIdentifiers( node );
+  } catch( e ) {
+    console.error(`Error: ${o.expr}`);
+    throw e;
+  }
+  let expected = o.idents || [];
+  assert.equal(Array.from( new Set(idents) ).join(','), Array.from( new Set(expected) ).join(','), `Failed: ${o.expr} identifiers (${idents}) === ${expected}`);
+  ++passed;
+} );
 
 async function testAsync() {
   const asyncContext = context;

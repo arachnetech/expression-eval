@@ -123,6 +123,66 @@ function evaluate ( node, context ) {
 
 }
 
+function readIdentifiers( node ) {
+  let idents = [];
+  function buildIdentifiers( node ) {
+    switch( node.type ) {
+      case 'ArrayExpression':
+        node.elements.forEach( ( elem ) => {
+          buildIdentifiers( elem );
+        } );
+        break;
+    
+      case 'BinaryExpression':
+        buildIdentifiers( node.left );
+        buildIdentifiers( node.right );
+        break;
+    
+        case 'CallExpression':
+          node.arguments.forEach( ( arg ) => {
+            buildIdentifiers( arg );
+          } );
+          if( node.callee.type !== 'Identifier' ) {
+            buildIdentifiers( node.callee );
+          }
+          break;
+    
+        case 'ConditionalExpression':
+          buildIdentifiers( node.consequent );
+          buildIdentifiers( node.alternate );
+          break;
+    
+        case 'Identifier':
+          idents.push( node.name );
+          break;
+    
+        case 'Literal':
+          return node.value;
+    
+        case 'LogicalExpression':
+          buildIdentifiers( node.left );
+          buildIdentifiers( node.right );
+          break;
+    
+        case 'MemberExpression':
+          buildIdentifiers( node.object );
+          if( node.property.type !== 'Identifier' ) {
+            buildIdentifiers( node.property );
+          }
+          break;
+
+        case 'ThisExpression':
+          break;
+    
+        case 'UnaryExpression':
+          buildIdentifiers( node.argument );
+          break;
+    }
+  }
+  buildIdentifiers( node );
+  return idents;
+}
+
 async function evaluateAsync( node, context ) {
 
   switch ( node.type ) {
@@ -215,6 +275,7 @@ function compileAsync(expression) {
 
 module.exports = {
   parse: jsep,
+  readIdentifiers: readIdentifiers,
   eval: evaluate,
   evalAsync: evaluateAsync,
   compile: compile,
