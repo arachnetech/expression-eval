@@ -91,10 +91,12 @@ function evaluate ( node, context ) {
         : evaluate( node.alternate, context );
 
     case 'Identifier':
-      if( typeof context.getValue == 'function' ) {
-        return context.getValue( node.name );
+      if( context.hasOwnProperty( node.name ) ) {
+        return context[ node.name ];
+      } else if( typeof context.getValue == 'function' ) {
+          return context.getValue( node.name );
       } else {
-        return context[node.name];
+        return undefined;
       }
 
     case 'Literal':
@@ -123,7 +125,7 @@ function evaluate ( node, context ) {
 
 }
 
-function readIdentifiers( node ) {
+function readIdentifiers( node, context ) {
   let idents = [];
   function buildIdentifiers( node ) {
     switch( node.type ) {
@@ -145,6 +147,12 @@ function readIdentifiers( node ) {
           if( node.callee.type !== 'Identifier' ) {
             buildIdentifiers( node.callee );
           }
+          else if( node.callee.name == 'getValue' ) {
+            // user is calling getValue within expression - first parameter is identifier
+            if( node.arguments.length > 0 ) {
+              idents.push( evaluate( node.arguments[ 0 ], context || {} ) );
+            }
+          }
           break;
     
         case 'ConditionalExpression':
@@ -157,7 +165,7 @@ function readIdentifiers( node ) {
           break;
     
         case 'Literal':
-          return node.value;
+          break;
     
         case 'LogicalExpression':
           buildIdentifiers( node.left );
@@ -221,11 +229,13 @@ async function evaluateAsync( node, context ) {
         : await evaluateAsync( node.alternate, context );
 
     case 'Identifier':
-        if( typeof context.getValue == 'function' ) {
+      if( context.hasOwnProperty( node.name ) ) {
+        return context[ node.name ];
+      } else if( typeof context.getValue == 'function' ) {
           return context.getValue( node.name );
-        } else {
-          return context[node.name];
-        }
+      } else {
+        return undefined;
+      }
 
     case 'Literal':
       return node.value;

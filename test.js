@@ -85,11 +85,11 @@ const fixtures = [
   // 'this' context
   {expr: 'this.three', expected: 3 },
 
-];
-
-// getValue()
-var fixturesWithGetValue = [
-  {expr: 'my_val', expected: 1.234 }
+  // getValue()
+  { expr: 'my_val', expected: 1.234, idents: ['my_val'] },
+  { expr: 'number', expected: 123, idents: ['number'] },
+  { expr: 'getValue( "number" )', expected: 234, idents: ['number'] },
+  { expr: 'getValue( "calc_" + "ident" )', expected: undefined, idents: ['calc_ident'] },
 ];
 
 const context = {
@@ -104,25 +104,30 @@ const context = {
   list: [1,2,3,4,5],
   func: function(x) { return x + 1; },
   isArray: Array.isArray,
-  throw: () => { throw new Error('Should not be called.'); }
+  throw: () => { throw new Error('Should not be called.'); },
+  getValue: function( id ) {
+    if( id === 'my_val' ) {
+        return 1.234;
+    } else if( id == "number" ) {
+      return 234;
+    }
+  }
 };
 
 var tests = 0;
 var passed = 0;
 
-function testSync( o ) {
-    tests++;
-    try {
-      var val = expr.compile(o.expr)(context);
-    } catch (e) {
-      console.error(`Error: ${o.expr}, expected ${o.expected}`);
-      throw e;
-    }
-    assert.equal(val, o.expected, `Failed: ${o.expr} (${val}) === ${o.expected}`);
-    passed++;
-}
-
-fixtures.forEach( testSync );
+fixtures.forEach( ( o ) => { 
+  tests++;
+  try {
+    var val = expr.compile(o.expr)(context);
+  } catch (e) {
+    console.error(`Error: ${o.expr}, expected ${o.expected}`);
+    throw e;
+  }
+  assert.equal(val, o.expected, `Failed: ${o.expr} (${val}) === ${o.expected}`);
+  passed++;
+} );
 
 fixtures.forEach( ( o ) => {
   tests++;
@@ -170,14 +175,5 @@ async function testAsync() {
 }
 
 testAsync().then(() => {
-
-  // get getValue()
-  context.getValue = function( id ) {
-    if( id === 'my_val' ) {
-        return 1.234;
-    }
-  };
-  fixturesWithGetValue.forEach( testSync );
-
   console.log('%s/%s tests passed.', passed, tests);
 })
