@@ -12,7 +12,8 @@
     "dev": "budo browser.js:bundle.js",
     "test": "node test.js",
     "preversion": "npm run test",
-    "postversion": "git push && git push --tags && npm publish"
+    "postversion": "git push && git push --tags && npm publish",
+    "build": "node build.js"
   },
   "keywords": [
     "expression",
@@ -31,6 +32,11 @@
     "jsep": "^0.3.0"
   },
   "devDependencies": {
-    "budo": "^10.0.4"
+    "@babel/core": "^7.6.0",
+    "@babel/preset-env": "^7.6.0",
+    "babelify": "^10.0.0",
+    "browserify": "^16.5.0",
+    "budo": "^10.0.4",
+    "uglifyify": "^5.0.2"
   }
 }

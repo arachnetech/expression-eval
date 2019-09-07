@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+    </head>
+    <body>
+        <script src="dist/bundle.js"></script>
+        <script>
+            console.log( expr.readIdentifiers( expr.parse( '1 + func( input ) * val + getValue( "named_value" ) + func( "string" )' ) ) );
+            console.log( expr.compile( '2 * 50 + 123/10' )() );
+        </script>
+    </body>    
+</html>
