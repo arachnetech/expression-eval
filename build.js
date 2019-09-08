@@ -3,7 +3,7 @@ var browserify = require("browserify");
 var banner = require("browserify-banner");
 
 browserify("./browser.js")
-  .plugin(banner, { file: "banner.js" } )
+  .plugin(banner, { file: "banner.txt" } )
   .transform("babelify", { presets: ["@babel/preset-env"] })
   .transform("uglifyify", { global: true } )
   .bundle()
