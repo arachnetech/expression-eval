@@ -1,7 +1,10 @@
 var fs = require("fs");
 var browserify = require("browserify");
+var banner = require("browserify-banner");
+
 browserify("./browser.js")
+  .plugin(banner, { file: "banner.js" } )
   .transform("babelify", { presets: ["@babel/preset-env"] })
   .transform("uglifyify", { global: true } )
   .bundle()
-  .pipe(fs.createWriteStream("./dist/bundle.js"));
+  .pipe(fs.createWriteStream("./dist/expr.js"));
